@@ -7,7 +7,7 @@ export const Container = styled.header`
   justify-content: center;
   align-items: center;
 
-  height: 198px;
+  height: 12.5rem;
 `;
 
 export const Content = styled.div`
