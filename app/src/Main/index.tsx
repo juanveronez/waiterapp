@@ -1,5 +1,5 @@
 import { ActivityIndicator } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "../components/Button";
 import { Categories } from "../components/Categories";
@@ -9,7 +9,6 @@ import { TableModal } from "../components/TableModal";
 import { Cart } from "../components/Cart";
 import { Product } from "../types/Product";
 import { useCart } from "../hooks/useCart";
-import { products as mockedProducts } from "../mocks/products";
 
 import {
   Container,
@@ -21,10 +20,27 @@ import {
 } from "./styles";
 import { Empty } from "../components/Icons/Empty";
 import { Text } from "../components/Text";
+import { Category } from "../types/Category";
+import { api } from "../utils/api";
 
 export function Main() {
-  const [isLoading] = useState(false);
-  const [products] = useState(mockedProducts);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    Promise.all([
+      api<Category[]>("categories"),
+      api<Product[]>("products"),
+    ]).then(([categoriesResponse, productsResponse]) => {
+      setCategories(categoriesResponse.data);
+      setProducts(productsResponse.data);
+      setIsLoading(false);
+    });
+  }, []);
 
   const [isTableModalVisible, setIsTableModalVisible] = useState(false);
   const [selectedTable, setSelectedTable] = useState<null | string>(null);
@@ -66,6 +82,17 @@ export function Main() {
     onDecrementCart(product);
   }
 
+  async function handleSelectCategory(categoryId: string | null) {
+    const route = !categoryId
+      ? "products"
+      : `categories/${categoryId}/products`;
+
+    setIsLoadingProducts(true);
+    const { data } = await api.get<Product[]>(route);
+    setProducts(data);
+    setIsLoadingProducts(false);
+  }
+
   return (
     <>
       <Container>
@@ -80,24 +107,33 @@ export function Main() {
           </CenteredContainer>
         )}
 
-        {productsEmpty && (
-          <CenteredContainer>
-            <Empty />
-            <Text color="#666" style={{ marginTop: 24 }}>
-              Nenhum produto foi encontrado!
-            </Text>
-          </CenteredContainer>
-        )}
-
-        {!isLoading && !productsEmpty && (
+        {!isLoading && (
           <>
-            <CategoriesContainer>
-              <Categories />
-            </CategoriesContainer>
+            <>
+              <CategoriesContainer>
+                <Categories
+                  categories={categories}
+                  onSelectCategory={handleSelectCategory}
+                />
+              </CategoriesContainer>
+            </>
 
-            <MenuContainer>
-              <Menu products={products} onAddToCart={handleAddToCart} />
-            </MenuContainer>
+            {isLoadingProducts ? (
+              <CenteredContainer>
+                <ActivityIndicator color="#d73035" size="large" />
+              </CenteredContainer>
+            ) : productsEmpty ? (
+              <CenteredContainer>
+                <Empty />
+                <Text color="#666" style={{ marginTop: 24 }}>
+                  Nenhum produto foi encontrado!
+                </Text>
+              </CenteredContainer>
+            ) : (
+              <MenuContainer>
+                <Menu products={products} onAddToCart={handleAddToCart} />
+              </MenuContainer>
+            )}
           </>
         )}
       </Container>
@@ -105,14 +141,15 @@ export function Main() {
         <FooterSafeArea>
           {selectedTable ? (
             <Cart
-              onConfirmOrder={handleResetOrder}
               cartItems={cartItems}
+              selectedTable={selectedTable}
+              onConfirmOrder={handleResetOrder}
               onAdd={handleAddToCart}
               onDecrement={handleDecrementCart}
             />
           ) : (
             <Button
-              disabled={isLoading || productsEmpty}
+              disabled={isLoading || isLoadingProducts}
               onPress={handleOpenModal}
             >
               Novo pedido

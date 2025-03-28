@@ -3,7 +3,7 @@ import styled from "styled-components/native";
 
 const isAndroid = Platform.OS === "android";
 
-export const Category = styled.TouchableOpacity`
+export const Container = styled.TouchableOpacity`
   gap: 8px;
   align-items: center;
   margin-left: 24px;
