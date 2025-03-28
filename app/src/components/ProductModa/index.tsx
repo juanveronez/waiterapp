@@ -15,15 +15,29 @@ import {
 import { Close } from "../Icons/Close";
 import { Button } from "../Button";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { getProductUri } from "../../utils/getProductUri";
 
 interface ProductModalProps {
   visible: boolean;
   product: Product | null;
   onClose: () => void;
+  onAddToCart: (product: Product) => void;
 }
 
-export function ProductModal({ visible, product, onClose }: ProductModalProps) {
+export function ProductModal({
+  visible,
+  product,
+  onClose,
+  onAddToCart,
+}: ProductModalProps) {
   if (!product) return null;
+
+  function handleAddToCart() {
+    if (!product) throw new Error("product should be deffined before use it.");
+
+    onAddToCart(product);
+    onClose();
+  }
 
   return (
     <Modal
@@ -34,7 +48,7 @@ export function ProductModal({ visible, product, onClose }: ProductModalProps) {
     >
       <ProductImage
         source={{
-          uri: `http://192.168.15.49:3001/uploads/${product.imagePath}`,
+          uri: getProductUri(product),
         }}
       >
         <CloseButton onPress={onClose}>
@@ -79,7 +93,7 @@ export function ProductModal({ visible, product, onClose }: ProductModalProps) {
               {formatCurrency(product.price)}
             </Text>
           </PriceContainer>
-          <Button onPress={() => alert("added")}>Adicionar ao carrinho</Button>
+          <Button onPress={handleAddToCart}>Adicionar ao carrinho</Button>
         </FooterSafeArea>
       </Footer>
     </Modal>

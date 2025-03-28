@@ -1,18 +1,40 @@
 import { Text } from "../Text";
 import { Container } from "./styles";
 
-interface ButtonProps {
+import { ActivityIndicator, TouchableOpacityProps } from "react-native";
+
+interface ButtonProps extends TouchableOpacityProps {
   children: string;
-  onPress?: () => void;
-  disabled?: boolean;
+  variant?: boolean;
+  loading?: boolean;
 }
 
-export function Button({ children, onPress, disabled }: ButtonProps) {
+export function Button({
+  children,
+  variant,
+  loading,
+  disabled,
+  ...props
+}: ButtonProps) {
+  const primaryColor = "#d73035";
+  const secundaryColor = "#fff";
+
+  const backgroundColor = !variant ? primaryColor : secundaryColor;
+  const textColor = !variant ? secundaryColor : primaryColor;
+
   return (
-    <Container disabled={disabled} onPress={onPress}>
-      <Text weight="600" color="#fff">
-        {children}
-      </Text>
+    <Container
+      {...props}
+      disabled={loading || disabled}
+      color={backgroundColor}
+    >
+      {!loading ? (
+        <Text weight="600" color={textColor}>
+          {children}
+        </Text>
+      ) : (
+        <ActivityIndicator color={textColor} />
+      )}
     </Container>
   );
 }

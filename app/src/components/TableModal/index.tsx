@@ -7,16 +7,20 @@ import { useState } from "react";
 
 interface TableModalProps {
   visible: boolean;
-  onClose: () => void;
+  onCancel: () => void;
   onSave: (table: string) => void;
 }
 
-export function TableModal({ visible, onClose, onSave }: TableModalProps) {
+export function TableModal({ visible, onCancel, onSave }: TableModalProps) {
   const [tableInput, setTableInput] = useState("");
 
   function handleSave() {
     onSave(tableInput);
-    onClose();
+    setTableInput("");
+  }
+
+  function handleCancel() {
+    onCancel();
     setTableInput("");
   }
 
@@ -27,7 +31,7 @@ export function TableModal({ visible, onClose, onSave }: TableModalProps) {
           <Header>
             <Text weight="600">Informe a mesa</Text>
 
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleCancel}>
               <Close color="#666" />
             </TouchableOpacity>
           </Header>

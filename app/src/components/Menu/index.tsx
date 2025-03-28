@@ -1,5 +1,4 @@
 import { FlatList } from "react-native";
-import { products } from "../../mocks/products";
 
 import {
   ProductContainer,
@@ -14,8 +13,14 @@ import { PlusCircle } from "../Icons/PlusCircle";
 import { ProductModal } from "../ProductModa";
 import { useState } from "react";
 import { Product } from "../../types/Product";
+import { getProductUri } from "../../utils/getProductUri";
 
-export function Menu() {
+interface MenuProps {
+  onAddToCart: (product: Product) => void;
+  products: Product[];
+}
+
+export function Menu({ products, onAddToCart }: MenuProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [focusedProduct, setFocusedProduct] = useState<Product | null>(null);
 
@@ -35,6 +40,7 @@ export function Menu() {
         product={focusedProduct}
         visible={isModalVisible}
         onClose={handleCloseProduct}
+        onAddToCart={onAddToCart}
       />
 
       <FlatList
@@ -47,7 +53,7 @@ export function Menu() {
           <ProductContainer onPress={() => handleOpenProduct(product)}>
             <ProductImage
               source={{
-                uri: `http://192.168.15.49:3001/uploads/${product.imagePath}`,
+                uri: getProductUri(product),
               }}
             />
             <ProductDetails>
@@ -60,7 +66,7 @@ export function Menu() {
               </Text>
             </ProductDetails>
 
-            <AddToCardButton>
+            <AddToCardButton onPress={() => onAddToCart(product)}>
               <PlusCircle />
             </AddToCardButton>
           </ProductContainer>
